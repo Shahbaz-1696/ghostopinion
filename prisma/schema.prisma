@@ -22,7 +22,7 @@ model User {
   verfiyCodeExpiry   DateTime
   isVerified         Boolean   @default(false)
   isAcceptingMessage Boolean   @default(true)
-  message            Message[]
+  messages           Message[]
 }
 
 model Message {
