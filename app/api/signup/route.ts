@@ -2,10 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import bcrypt from "bcrypt";
+import { signupSchema } from "@/schemas/signupSchema";
 
 export async function POST(req: NextRequest) {
   try {
     const { email, username, password } = await req.json();
+    const { success } = await signupSchema.safeParse({
+      email,
+      username,
+      password,
+    });
+    if (!success) {
+      return NextResponse.json(
+        {
+          message: "Inputs are incorrect",
+        },
+        {
+          status: 411,
+        }
+      );
+    }
     const existingUserVerifiedByUsername = await db.user.findFirst({
       where: {
         username,
