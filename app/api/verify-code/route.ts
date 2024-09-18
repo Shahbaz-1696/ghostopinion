@@ -1,11 +1,17 @@
 import db from "@/lib/db";
-import { z } from "zod";
 import { verifySchema } from "@/schemas/verifySchema";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
     const { username, code } = await req.json();
+    const parsedCode = verifySchema.safeParse({ code });
+    if (!parsedCode.success) {
+      return NextResponse.json({
+        success: false,
+        message: "Verification code is invalid",
+      });
+    }
     const decodedUsername = decodeURIComponent(username);
     const user = await db.user.findFirst({
       where: {
@@ -23,7 +29,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isCodeValid = user.verifyCode === code;
+    const isCodeValid = user.verifyCode === parsedCode.data.code;
     const isCodeNotExpired = new Date(user.verfiyCodeExpiry) > new Date();
 
     if (isCodeValid && isCodeNotExpired) {
